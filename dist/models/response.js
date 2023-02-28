@@ -17,5 +17,6 @@ const resSchema = new mongoose_1.default.Schema({
     },
     createdAt: { type: Date, required: true, default: Date.now() },
     result: Number,
+    __version: { type: Number, default: 0 },
 });
 exports.default = mongoose_1.default.model("Response", resSchema);

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFormRes = exports.newFormRes = void 0;
+exports.getResSummery = exports.getAllRes = exports.getFormRes = exports.newFormRes = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const form_1 = __importDefault(require("../models/form"));
 const question_1 = __importDefault(require("../models/question"));
@@ -28,6 +28,10 @@ function newFormRes(req, res) {
             if (!oldForm)
                 return res.status(404).json({ msg: 'form not found' });
             const { questions } = req.body;
+            const oldRes = yield response_1.default.findOne({ formId, userId });
+            if ((oldRes === null || oldRes === void 0 ? void 0 : oldRes.__version) && (oldRes === null || oldRes === void 0 ? void 0 : oldRes.__version) > 3) {
+                return res.status(401).json({ msg: 'Already submitted 3 times!' });
+            }
             //  ----------------                     checking all the responses    -------------------------------------
             // console.log(questions)
             const question_res_PromiseArray = questions.map(({ _id: qId, ans_type, res_array, res_text }) => __awaiter(this, void 0, void 0, function* () {
@@ -58,10 +62,6 @@ function newFormRes(req, res) {
             if (isNull !== -1) {
                 return res.status(401).json({ msg: 'Improper format of questions' });
             }
-            const oldRes = yield response_1.default.findOne({ formId, userId });
-            if ((oldRes === null || oldRes === void 0 ? void 0 : oldRes.__v) > 1) {
-                return res.status(401).json({ msg: 'Already submitted two times!' });
-            }
             // -------------------------------------          making Res Summery    --------------------------------------------
             const formResSummery = yield resSummery_1.default.findById(oldForm.formResSummery);
             // -----------------------------------------    making new res document    ------------------------------
@@ -70,6 +70,7 @@ function newFormRes(req, res) {
                 userId,
                 mcq_res: new Map(),
                 text_res: new Map(),
+                __version: ((oldRes === null || oldRes === void 0 ? void 0 : oldRes.__version) || 0) + 1
             };
             // --------------------------------              if older response exist  -------------------------------------
             if (oldRes !== null) {
@@ -159,3 +160,73 @@ function getFormRes(req, res) {
     });
 }
 exports.getFormRes = getFormRes;
+function getAllRes(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { formId } = req.params;
+            const { _id: userId } = res.user;
+            // console.log(formId,userId)
+            const form = yield form_1.default.findById(formId);
+            if (!form || !form.author || form.author.toString() !== userId.toString()) {
+                return res.status(403).json({ msg: 'Unautherized' });
+            }
+            // const allRes = await formRes.find({
+            //   formId,
+            // })
+            const allRes = yield response_1.default.aggregate([
+                { $match: { formId: new mongoose_1.default.Types.ObjectId(formId) } },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "userId",
+                        foreignField: "_id",
+                        as: "userInfo"
+                    }
+                },
+                {
+                    $addFields: {
+                        'user': { $arrayElemAt: ["$userInfo", 0] }
+                    }
+                },
+                { $project: {
+                        'mcq_res': 1, 'text_res': 1,
+                        'user.name': 1,
+                        'user.email': 1,
+                    } }
+            ]);
+            if (!allRes) {
+                return res.status(201).json({ msg: 'Response doesnt exist' });
+            }
+            return res.status(201).json({ allRes });
+        }
+        catch (err) {
+            return res.status(500).json({ msg: 'Some internal error occured', err });
+        }
+    });
+}
+exports.getAllRes = getAllRes;
+function getResSummery(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { formId } = req.params;
+            const { _id: userId } = res.user;
+            // console.log(formId,userId)
+            const form = yield form_1.default.findById(formId);
+            if (!form || !form.author || form.author.toString() !== userId.toString()) {
+                return res.status(403).json({ msg: 'Unautherized' });
+            }
+            // const allRes = await formRes.find({
+            //   formId,
+            // })
+            const summery = yield resSummery_1.default.findById(form.formResSummery);
+            if (!summery) {
+                return res.status(201).json({ msg: 'Summery doesnt exist' });
+            }
+            return res.status(201).json({ summery });
+        }
+        catch (err) {
+            return res.status(500).json({ msg: 'Some internal error occured', err });
+        }
+    });
+}
+exports.getResSummery = getResSummery;

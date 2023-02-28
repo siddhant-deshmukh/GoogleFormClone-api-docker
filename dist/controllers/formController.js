@@ -81,7 +81,9 @@ function editForm(req, res) {
                 return res.status(404).json({ msg: 'form not found' });
             if (oldForm.author.toString() !== _id.toString())
                 return res.status(401).json({ msg: 'Unauthorized' });
-            let newForm = {};
+            if (oldForm.__version > 10)
+                return res.status(401).json({ msg: 'Already edited 10 times!' });
+            let newForm = { __version: (oldForm.__version || 0) + 1 };
             const { title, desc, starttime, endtime } = req.body;
             if (title)
                 newForm = Object.assign(Object.assign({}, newForm), { title });
@@ -242,8 +244,12 @@ function editQuestion(req, res) {
                 return res.status(404).json({ msg: 'question not found' });
             if (que.formId.toString() !== formId)
                 return res.status(401).json({ msg: 'Unauthorized' });
+            if (que.__version > 2)
+                return res.status(401).json({ msg: 'Already edited 3/4 times' });
+            // console.log(que.__version,que.__version > 4)
             const { title, desc, ans_type, required, optionsArray, correct_ans, point } = req.body;
-            yield question_1.default.findByIdAndUpdate(queId, { title, desc, ans_type, required, optionsArray, correct_ans, point });
+            const __version = (que.__version || 0) + 1;
+            yield question_1.default.findByIdAndUpdate(queId, { title, desc, ans_type, required, optionsArray, correct_ans, point, __version });
             return res.status(201).json({ title, desc, ans_type, required, optionsArray, correct_ans, point });
         }
         catch (err) {

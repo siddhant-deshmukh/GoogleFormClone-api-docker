@@ -26,6 +26,11 @@ export async function newFormRes(req: Request, res: Response) {
       })[]
     } = req.body
 
+    const oldRes = await formRes.findOne({ formId, userId })
+    if (oldRes?.__version && oldRes?.__version > 3) {
+      return res.status(401).json({ msg: 'Already submitted 3 times!' })
+    }
+    
     //  ----------------                     checking all the responses    -------------------------------------
     // console.log(questions)
     const question_res_PromiseArray = questions.map(async ({ _id: qId, ans_type, res_array, res_text })
@@ -55,10 +60,7 @@ export async function newFormRes(req: Request, res: Response) {
       return res.status(401).json({ msg: 'Improper format of questions' })
     }
 
-    const oldRes = await formRes.findOne({ formId, userId })
-    if (oldRes?.__v > 1) {
-      return res.status(401).json({ msg: 'Already submitted two times!' })
-    }
+    
 
     // -------------------------------------          making Res Summery    --------------------------------------------
     const formResSummery = await ResSummery.findById(oldForm.formResSummery)
@@ -68,6 +70,7 @@ export async function newFormRes(req: Request, res: Response) {
       userId,
       mcq_res: new Map(),
       text_res: new Map(),
+      __version: (oldRes?.__version || 0) + 1
     }
 
     // --------------------------------              if older response exist  -------------------------------------
@@ -141,7 +144,7 @@ export async function newFormRes(req: Request, res: Response) {
 }
 export async function getFormRes(req: Request, res: Response) {
   try {
-    
+
     const { formId } = req.params
     const { _id: userId } = res.user
 
@@ -154,6 +157,72 @@ export async function getFormRes(req: Request, res: Response) {
       return res.status(201).json({ msg: 'Response doesnt exist' })
     }
     return res.status(201).json({ oldRes })
+  } catch (err) {
+    return res.status(500).json({ msg: 'Some internal error occured', err })
+  }
+}
+export async function getAllRes(req: Request, res: Response) {
+  try {
+
+    const { formId } = req.params
+    const { _id: userId } = res.user
+
+    // console.log(formId,userId)
+    const form = await Form.findById(formId)
+    if (!form || !form.author || form.author.toString() !== userId.toString()) {
+      return res.status(403).json({ msg: 'Unautherized' })
+    }
+    // const allRes = await formRes.find({
+    //   formId,
+    // })
+    const allRes = await formRes.aggregate([
+      { $match: { formId: new mongoose.Types.ObjectId(formId) } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userInfo"
+        }
+      },
+      {
+        $addFields : {
+          'user' : { $arrayElemAt : ["$userInfo",0] }
+        }
+      },
+      { $project: { 
+        'mcq_res': 1, 'text_res': 1, 
+        'user.name' : 1,
+        'user.email' : 1,
+      } }
+    ])
+    if (!allRes) {
+      return res.status(201).json({ msg: 'Response doesnt exist' })
+    }
+    return res.status(201).json({ allRes })
+  } catch (err) {
+    return res.status(500).json({ msg: 'Some internal error occured', err })
+  }
+}
+export async function getResSummery(req: Request, res: Response) {
+  try {
+
+    const { formId } = req.params
+    const { _id: userId } = res.user
+
+    // console.log(formId,userId)
+    const form = await Form.findById(formId)
+    if (!form || !form.author || form.author.toString() !== userId.toString()) {
+      return res.status(403).json({ msg: 'Unautherized' })
+    }
+    // const allRes = await formRes.find({
+    //   formId,
+    // })
+    const summery = await ResSummery.findById(form.formResSummery)
+    if (!summery) {
+      return res.status(201).json({ msg: 'Summery doesnt exist' })
+    }
+    return res.status(201).json({ summery })
   } catch (err) {
     return res.status(500).json({ msg: 'Some internal error occured', err })
   }

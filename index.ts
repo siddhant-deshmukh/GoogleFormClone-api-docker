@@ -14,13 +14,14 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT;
 
-app.use(cors({origin:'http://localhost:5173',credentials:true ,optionsSuccessStatus:200}));
+app.use(cors({origin:`${process.env.Client_Url}`,credentials:true ,optionsSuccessStatus:200}));
 
-app.use(bodyParser.json())
+
 app.use(
   bodyParser.urlencoded({extended:true})
 );
-app.use(express.json())
+app.use(express.json({limit:'50kb'}))
+
 app.use(cookieParser())
 
 mongoose.connect(process.env.MONGODB_ATLAS_URL as string)

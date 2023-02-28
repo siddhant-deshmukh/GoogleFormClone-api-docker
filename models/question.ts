@@ -15,6 +15,7 @@ export interface IQuestion extends IQuestion_b{
 }
 export interface IQuestionStored extends IQuestion {
     _id : IMongooseObjectId,
+    __version: number,
 }
 const questionSchema = new mongoose.Schema<IQuestionStored>({
     formId: {type: mongoose.SchemaTypes.ObjectId,required:true},
@@ -24,7 +25,9 @@ const questionSchema = new mongoose.Schema<IQuestionStored>({
     ans_type: { type: String, required: true, enum: ['short_ans', 'long_ans', 'mcq', 'checkbox', 'dropdown', 'mcq_grid', 'checkboc_grid', 'range', 'date', 'time'] },
     optionsArray: [{ type: String, maxlength: 50 }],
     correct_ans:[{type:String,maxlength:50}],
-    point:{type:Number,min:0,max:100}
+    point:{type:Number,min:0,max:100},
+    __version: { type: Number, default:0 },
+
 })
 questionSchema.path('optionsArray').validate((val: IMongooseObjectId[]) => { return val.length < 20 }, 'question can have 100 options at max')
 questionSchema.path('correct_ans').validate((val: IMongooseObjectId[]) => { return val.length < 20 }, 'question can have 100 options at max')

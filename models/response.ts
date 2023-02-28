@@ -6,11 +6,13 @@ export interface IRes_b {
     formId : IMongooseObjectId,
     mcq_res? : Map<string,string[]>,
     text_res? : Map<string,string>,
-    result? : number
+    result? : number,
+    __version?: number,
 }
 export interface IRes extends IRes_b{
     _id : IMongooseObjectId,
     createdAt : Date,
+    __version: number,
 }
 
 const resSchema = new mongoose.Schema<IRes>({
@@ -26,6 +28,7 @@ const resSchema = new mongoose.Schema<IRes>({
     },
     createdAt: { type: Date, required:true, default: Date.now() },
     result : Number,
+    __version: { type: Number, default:0 },
 })
 
 export default mongoose.model<IRes>("Response", resSchema)

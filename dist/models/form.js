@@ -12,6 +12,7 @@ const formSchema = new mongoose_1.default.Schema({
     formResSummery: { type: mongoose_1.default.SchemaTypes.ObjectId, ref: 'ResSummery' },
     starttime: { type: Date },
     endtime: { type: Date },
+    __version: { type: Number, default: 0 },
 });
 formSchema.path('questions').validate((val) => { return val.length <= 21; }, 'form can have 20 questions at max');
 exports.default = mongoose_1.default.model("Form", formSchema);

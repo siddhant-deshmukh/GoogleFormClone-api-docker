@@ -39,10 +39,9 @@ const resRoutes_1 = __importDefault(require("./routes/resRoutes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT;
-app.use((0, cors_1.default)({ origin: 'http://localhost:5173', credentials: true, optionsSuccessStatus: 200 }));
-app.use(bodyParser.json());
+app.use((0, cors_1.default)({ origin: `${process.env.Client_Url}`, credentials: true, optionsSuccessStatus: 200 }));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express_1.default.json());
+app.use(express_1.default.json({ limit: '50kb' }));
 app.use((0, cookie_parser_1.default)());
 mongoose_1.default.connect(process.env.MONGODB_ATLAS_URL)
     .then(() => { console.log("Connected to database"); })

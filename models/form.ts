@@ -14,6 +14,7 @@ export interface IForm {
 export interface IFormStored extends IForm {
     _id: IMongooseObjectId ,
     formResSummery: IMongooseObjectId,
+    __version: number,
     settings?: {
 
     }
@@ -28,6 +29,7 @@ const formSchema = new mongoose.Schema<IFormStored>({
     formResSummery: {type : mongoose.SchemaTypes.ObjectId, ref:'ResSummery'},
     starttime: { type: Date },
     endtime: { type: Date },
+    __version: { type: Number, default:0 },
 })
 formSchema.path('questions').validate((val: IMongooseObjectId[]) => { return val.length <= 21 }, 'form can have 20 questions at max')
 

@@ -11,7 +11,7 @@ import QueryString from 'qs';
 import axios from 'axios'
 dotenv.config();
 
-const googleClient = new google.auth.OAuth2(process.env.GoogleClientId,process.env.Google_Secret,"http://localhost:5173");
+const googleClient = new google.auth.OAuth2(process.env.GoogleClientId,process.env.Google_Secret,`${process.env.Client_Url}`);
 // console.log(process.env.GoogleClientId,process.env.Google_Secret)
 /* GET home page. */
 router.get('/', auth, function(req : Request, res : Response, next : NextFunction) {
@@ -227,7 +227,7 @@ router.get('/login-github',
       console.log({token})
       return res.status(201).json({token})
     } catch (err){
-      console.log(`${process.env.Client_Url}&error=true`,"\n err in login github \n\n")
+      //console.log(`${process.env.Client_Url}&error=true`,"\n err in login github \n\n")
       return res.status(500).json({err,msg:"Internal error occured"})
     }
   }

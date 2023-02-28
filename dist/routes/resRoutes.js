@@ -17,4 +17,6 @@ router.post('/', (0, express_validator_1.body)('formId').exists().isString(), (0
     next();
 }, auth_1.default, resController_1.newFormRes);
 router.get('/f/:formId', auth_1.default, resController_1.getFormRes);
+router.get('/all/f/:formId', auth_1.default, resController_1.getAllRes);
+router.get('/summery/f/:formId', auth_1.default, resController_1.getResSummery);
 exports.default = router;

@@ -70,8 +70,9 @@ export async function editForm(req: Request, res: Response) {
     const oldForm = await Form.findById(formId)
     if (!oldForm) return res.status(404).json({ msg: 'form not found' })
     if (oldForm.author.toString() !== _id.toString()) return res.status(401).json({ msg: 'Unauthorized' })
+    if (oldForm.__version > 10) return res.status(401).json({ msg: 'Already edited 10 times!' })
 
-    let newForm = {}
+    let newForm : any = { __version : (oldForm.__version || 0) + 1 }
 
     const { title, desc, starttime, endtime }: IForm = req.body
     if (title) newForm = { ...newForm, title }
@@ -230,9 +231,12 @@ export async function editQuestion(req: Request, res: Response) {
 
     if (!que) return res.status(404).json({ msg: 'question not found' })
     if (que.formId.toString() !== formId) return res.status(401).json({ msg: 'Unauthorized' })
+    if (que.__version > 2) return res.status(401).json({ msg: 'Already edited 3/4 times' })
+    // console.log(que.__version,que.__version > 4)
 
     const { title, desc, ans_type, required, optionsArray, correct_ans, point }: IQuestionStored = req.body
-    await Question.findByIdAndUpdate(queId, { title, desc, ans_type, required, optionsArray, correct_ans, point })
+    const __version = (que.__version || 0) + 1
+    await Question.findByIdAndUpdate(queId, { title, desc, ans_type, required, optionsArray, correct_ans, point, __version })
 
     return res.status(201).json({ title, desc, ans_type, required, optionsArray, correct_ans, point })
   } catch (err) {
