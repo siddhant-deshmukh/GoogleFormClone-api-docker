@@ -1,12 +1,16 @@
 FROM node:16.10-alpine3.14
-ENV NODE_ENV=production
 
 WORKDIR /app
 
 COPY ["package.json", "./"]
 
-RUN npm install --production
+RUN npm install 
+
 
 COPY . .
 
-CMD [ "node", "server.js" ]
+RUN npx tsc
+
+
+CMD [ "npm", "start" ]
+EXPOSE 5000

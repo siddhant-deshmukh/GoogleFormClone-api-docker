@@ -12,7 +12,7 @@ import responsesRouter from './routes/resRoutes'
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 5000;
 
 app.use(cors({origin:`${process.env.Client_Url}`,credentials:true ,optionsSuccessStatus:200}));
 app.use(express.urlencoded({extended:false, limit:'1kb'}));   
