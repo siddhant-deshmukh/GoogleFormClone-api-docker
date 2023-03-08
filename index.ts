@@ -15,13 +15,8 @@ const app: Express = express();
 const port = process.env.PORT;
 
 app.use(cors({origin:`${process.env.Client_Url}`,credentials:true ,optionsSuccessStatus:200}));
-
-
-app.use(
-  bodyParser.urlencoded({extended:true})
-);
-app.use(express.json({limit:'50kb'}))
-
+app.use(express.urlencoded({extended:false, limit:'1kb'}));   
+app.use(express.json({limit:'20kb'})) // limit the size of incoming request body and parse i.e convert string json to js object for every incoming request
 app.use(cookieParser())
 
 mongoose.connect(process.env.MONGODB_ATLAS_URL as string)
