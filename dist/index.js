@@ -14,10 +14,10 @@ const formRoutes_1 = __importDefault(require("./routes/formRoutes"));
 const resRoutes_1 = __importDefault(require("./routes/resRoutes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-const port = process.env.PORT;
+const port = process.env.PORT || 5000;
 app.use((0, cors_1.default)({ origin: `${process.env.Client_Url}`, credentials: true, optionsSuccessStatus: 200 }));
-app.use(express_1.default.urlencoded({ extended: true }));
-app.use(express_1.default.json({ limit: '50kb' }));
+app.use(express_1.default.urlencoded({ extended: false, limit: '1kb' }));
+app.use(express_1.default.json({ limit: '20kb' })); // limit the size of incoming request body and parse i.e convert string json to js object for every incoming request
 app.use((0, cookie_parser_1.default)());
 mongoose_1.default.connect(process.env.MONGODB_ATLAS_URL)
     .then(() => { console.log("Connected to database"); })
