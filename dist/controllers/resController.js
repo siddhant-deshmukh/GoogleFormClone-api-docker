@@ -210,7 +210,6 @@ function getResSummery(req, res) {
         try {
             const { formId } = req.params;
             const { _id: userId } = res.user;
-            // console.log(formId,userId)
             const form = yield form_1.default.findById(formId);
             if (!form || !form.author || form.author.toString() !== userId.toString()) {
                 return res.status(403).json({ msg: 'Unautherized' });

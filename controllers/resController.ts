@@ -210,7 +210,6 @@ export async function getResSummery(req: Request, res: Response) {
     const { formId } = req.params
     const { _id: userId } = res.user
 
-    // console.log(formId,userId)
     const form = await Form.findById(formId)
     if (!form || !form.author || form.author.toString() !== userId.toString()) {
       return res.status(403).json({ msg: 'Unautherized' })
